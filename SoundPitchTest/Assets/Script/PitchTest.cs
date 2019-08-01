@@ -23,6 +23,7 @@ namespace Cova8bitdots
 
             SE_1UP,
 
+            PIANO_C3,
 
             MAX,
         }
@@ -116,11 +117,11 @@ namespace Cova8bitdots
                 }
                 if( !m_sourceList[i].isPlaying )
                 {
-                    Debug.Log($"{i}: End");
                     m_emptyList.Enqueue( m_sourceList[i] );
                 }
             }
         }
+
     }
 
     #if UNITY_EDITOR
@@ -130,7 +131,43 @@ namespace Cova8bitdots
     {
         const float UPPER_HALF_TONE = 1.05946309436f;   // 2^(1/12)
         const float LOWER_HALF_TONE = 0.94387431268f;   // 1/UPPER_HALF_TONE;
+        const float THIRD_TONE = 1.25992104989f;        // 3度
+        const float FIFTH_TONE = 1.49830707688f;        // 5度
 
+
+
+        static readonly float[] DIATONIC_SCALE = new float[]{
+            1.0f,               // 1度
+            1.12246204831f,     // 2度
+            1.25992104989f,     // 3度
+            1.33483985417f,     // 4度
+            1.49830707688f,     // 5度
+            1.68179283051f,     // 6度
+            1.88774862536f,     // 7度
+            2.0f,               // 8度
+        };
+
+        static readonly float[] PENTATONIC_SCALE = new float[]
+        {
+            1.0f,               // 1度
+            1.12246204831f,     // 2度
+            1.25992104989f,     // 3度
+            1.49830707688f,     // 5度
+            1.68179283051f,     // 6度
+        };
+        static readonly float[] ARABIC_SCALE = new float[]
+        {
+            1.0f,               // 1度
+            1.12246204831f,     // 2度
+            1.189207115f,       // 3度(♭)
+            1.41421356237f,     // 4度(♯)
+            1.49830707688f,     // 5度
+            1.58740105197f,     // 6度(♭)
+            1.88774862536f,     // 7度
+            2.0f,               // 8度
+        };
+
+        int index = 0;
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
@@ -171,11 +208,9 @@ namespace Cova8bitdots
 
                     length += obj.GetClipLength( PitchTest.CLIP_TYPE.CODE_G );
                     obj.PlaySE( PitchTest.CLIP_TYPE.CODE_Ab, length, 1.0f);
-                    Debug.Log($"Delay:{length}");
 
                     length += obj.GetClipLength( PitchTest.CLIP_TYPE.CODE_Ab );
                     obj.PlaySE( PitchTest.CLIP_TYPE.CODE_Bb, length, 1.0f);
-                    Debug.Log($"Delay:{length}");
                 }
                 if( GUILayout.Button("Play Script"))
                 {
@@ -186,12 +221,9 @@ namespace Cova8bitdots
 
                     length += obj.GetClipLength( PitchTest.CLIP_TYPE.CODE_G )*LOWER_HALF_TONE;
                     obj.PlaySE( PitchTest.CLIP_TYPE.CODE_G, length, UPPER_HALF_TONE);
-                    Debug.Log($"Delay:{length}");
 
                     length += obj.GetClipLength( PitchTest.CLIP_TYPE.CODE_G )*LOWER_HALF_TONE*LOWER_HALF_TONE*LOWER_HALF_TONE;
                     obj.PlaySE( PitchTest.CLIP_TYPE.CODE_G, length, UPPER_HALF_TONE*UPPER_HALF_TONE*UPPER_HALF_TONE);
-
-                    Debug.Log($"Delay:{length}");
 
                 }
             }
@@ -209,6 +241,83 @@ namespace Cova8bitdots
                 }
             }
             EditorGUILayout.EndHorizontal();
+
+            PlayCode( obj );
+
+            PlayScale( obj );
+        }
+        void PlayCode(PitchTest obj)
+        {
+            EditorGUILayout.LabelField("PLAY CODE");
+            EditorGUI.indentLevel++;
+            {
+                if( GUILayout.Button("Play A Code"))
+                {
+                    obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_A3, 0f, 1.0f);
+                    obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_A3, 0f, THIRD_TONE);
+                    obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_A3, 0f, FIFTH_TONE);
+                }
+                if( GUILayout.Button("Play C Code"))
+                {
+                    float pitch = UPPER_HALF_TONE * UPPER_HALF_TONE * UPPER_HALF_TONE;
+                    obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_A3, 0f, pitch);
+                    obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_A3, 0f, pitch * THIRD_TONE);
+                    obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_A3, 0f, pitch * FIFTH_TONE);
+                }
+            }
+            EditorGUI.indentLevel--;
+        }
+        void PlayScale(PitchTest obj)
+        {
+            EditorGUILayout.LabelField("PLAY SCALE");
+            EditorGUI.indentLevel++;
+            {
+                if( GUILayout.Button("Reset Index"))
+                {
+                    index = 0;
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                {
+                    if( GUILayout.Button("Play Random(Diatonic)"))
+                    {
+                        obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_C3, 0f, DIATONIC_SCALE[ UnityEngine.Random.Range(0, DIATONIC_SCALE.Length)]);
+                    }
+                    if( GUILayout.Button("Play Random(PentaTonic)"))
+                    {
+                        obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_C3, 0f, PENTATONIC_SCALE[ UnityEngine.Random.Range(0, PENTATONIC_SCALE.Length)]);
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginHorizontal();
+                {
+                    if( GUILayout.Button("Play Incr(Diatonic)"))
+                    {
+                        obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_C3, 0f, DIATONIC_SCALE[ index++ % DIATONIC_SCALE.Length ]);
+                    }
+                    if( GUILayout.Button("Play Incr(PentaTonic)"))
+                    {
+                        obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_C3, 0f, PENTATONIC_SCALE[ index++ % PENTATONIC_SCALE.Length ]);
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginHorizontal();
+                {
+                    if( GUILayout.Button("Play Incr(ARABIC)"))
+                    {
+                        obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_C3, 0f, ARABIC_SCALE[ index++ % ARABIC_SCALE.Length ]);
+                    }
+                    if( GUILayout.Button("Play Decr(ARABIC)"))
+                    {
+                        index = Mathf.Max( 0, index-1 );
+                        obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_C3, 0f, ARABIC_SCALE[ index % ARABIC_SCALE.Length ]);
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+            EditorGUI.indentLevel--;
         }
         #endif
     }
