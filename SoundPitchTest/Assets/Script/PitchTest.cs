@@ -233,11 +233,11 @@ namespace Cova8bitdots
             {
                 if( GUILayout.Button("Play A3"))
                 {
-                    obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_A3);
+                    obj.PlaySE( PitchTest.CLIP_TYPE.PIANO_A3, 0.0f, 1.0f);
                 }
                 if( GUILayout.Button("Play 1up"))
                 {
-                    obj.PlaySE( PitchTest.CLIP_TYPE.SE_1UP);
+                    obj.PlaySE( PitchTest.CLIP_TYPE.SE_1UP, 0.0f, 1.0f);
                 }
             }
             EditorGUILayout.EndHorizontal();
